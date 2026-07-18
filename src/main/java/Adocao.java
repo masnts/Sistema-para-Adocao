@@ -1,6 +1,9 @@
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Adocao {
+
+public class Adocao implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Animal animalAdotado;
     private Pessoa adotante;
     private String dataDeAdocao;

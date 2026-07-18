@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Animal {
+public class Animal implements Serializable {
     private Especie especie;
     private Sexo sexo;
     private int codigo;
@@ -9,6 +10,8 @@ public class Animal {
     private String nascimento;
     private String raca;
     private boolean adotado;
+    private static final long serialVersionUID = 1L;
+
 
     public Animal(String nome, Sexo sexo, int codigo, Especie especie, String nascimento, boolean castrado, String raca, boolean adotado) {
         this.nome=nome;
