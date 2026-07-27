@@ -287,23 +287,35 @@ public class SistemaAdocaoPrincipal extends JFrame {
         try {
 
             String nome = JOptionPane.showInputDialog(this, "Nome do animal:");
-            int codigo = Integer.parseInt(JOptionPane.showInputDialog(this, "Código:"));
+            if (nome == null) return;
+
+            String codigoStr = JOptionPane.showInputDialog(this, "Código:");
+            if (codigoStr == null) return;
+            int codigo = Integer.parseInt(codigoStr);
+
             String raca = JOptionPane.showInputDialog(this, "Raça:");
+            if (raca == null) return;
+
             String nascimento = JOptionPane.showInputDialog(this, "Nascimento:");
+            if (nascimento == null) return;
 
             Animal.Especie especie = (Animal.Especie) JOptionPane.showInputDialog(
                     this, "Espécie:", "Escolha",
                     JOptionPane.QUESTION_MESSAGE, null,
                     Animal.Especie.values(), Animal.Especie.CACHORRO);
+            if (especie == null) return;
 
             Animal.Sexo sexo = (Animal.Sexo) JOptionPane.showInputDialog(
                     this, "Sexo:", "Escolha",
                     JOptionPane.QUESTION_MESSAGE, null,
                     Animal.Sexo.values(), Animal.Sexo.MACHO);
+            if (sexo == null) return;
 
-            boolean castrado = JOptionPane.showConfirmDialog(
+            int respostaCastrado = JOptionPane.showConfirmDialog(
                     this, "É castrado?", "Castrado",
-                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+                    JOptionPane.YES_NO_OPTION);
+            if (respostaCastrado != JOptionPane.YES_OPTION && respostaCastrado != JOptionPane.NO_OPTION) return; // fechou o diálogo
+            boolean castrado = respostaCastrado == JOptionPane.YES_OPTION;
 
             Animal animal = new Animal(nome, sexo, codigo, especie, nascimento, castrado, raca, false);
 
@@ -325,9 +337,16 @@ public class SistemaAdocaoPrincipal extends JFrame {
     private void acaoCadastrarPessoa() {
         try {
             String cpf = JOptionPane.showInputDialog(this, "CPF:");
+            if (cpf == null) return;
+
             String nome = JOptionPane.showInputDialog(this, "Nome:");
+            if (nome == null) return;
+
             String endereco = JOptionPane.showInputDialog(this, "Endereço:");
+            if (endereco == null) return;
+
             String telefone = JOptionPane.showInputDialog(this, "Telefone:");
+            if (telefone == null) return;
 
             Pessoa pessoa = new Pessoa(cpf, nome, endereco, telefone);
 
