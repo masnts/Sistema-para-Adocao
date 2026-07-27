@@ -1,23 +1,25 @@
 import javax.swing.*;
 import java.io.IOException;
+import exceptions.*;
 
 public class ControllerAdocao {
 
     private GerenciamentoAdocao sistema;
-    private GravadorDeDados gravador;
 
 
     public ControllerAdocao(){
 
-        gravador = new GravadorDeDados();
+        sistema = new GerenciamentoAdocao();
 
         try{
 
-            sistema = (GerenciamentoAdocao) gravador.recuperar();
+            sistema.recuperarDados();
 
         }catch(Exception e){
 
-            sistema = new GerenciamentoAdocao();
+            // Não há dados salvos ainda, ou o arquivo está corrompido/incompatível.
+            // Registramos o motivo para facilitar o diagnóstico e seguimos com um sistema novo.
+            System.out.println("Não foi possível carregar dados salvos (" + e.getMessage() + "). Iniciando sistema vazio.");
 
         }
 
@@ -26,7 +28,7 @@ public class ControllerAdocao {
 
         try{
 
-            sistema = (GerenciamentoAdocao) gravador.recuperar();
+            sistema.recuperarDados();
 
         }catch(IOException | ClassNotFoundException e){
 
@@ -158,7 +160,7 @@ public class ControllerAdocao {
         try {
 
 
-            gravador.gravar(sistema);
+            sistema.salvarDados();
 
 
             JOptionPane.showMessageDialog(

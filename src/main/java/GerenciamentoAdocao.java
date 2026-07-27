@@ -1,6 +1,9 @@
-
+import exceptions.*;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.stream.Collectors;
+
 /**
  * Classe responsável por implementar as operações
  * de gerenciamento do sistema de adoção de animais.
@@ -17,6 +20,10 @@ public class GerenciamentoAdocao implements IGerenciamentoAdocao, Serializable {
     /**Método que cadastra um novo animal */
     @Override
     public void cadastrarAnimal(Animal animalNovo) {
+        if (animais.containsKey(animalNovo.getCodigo())) {
+            throw new AnimalCodigoJaExisteException(
+                    "Já existe um animal cadastrado com o código: " + animalNovo.getCodigo());
+        }
         animais.put(animalNovo.getCodigo(), animalNovo);
     }
 
@@ -24,6 +31,10 @@ public class GerenciamentoAdocao implements IGerenciamentoAdocao, Serializable {
 
     @Override
     public void cadastrarPessoa(Pessoa pessoaNova) {
+        if (pessoas.containsKey(pessoaNova.getCpf())) {
+            throw new PessoaJaCadastradaException(
+                    "Já existe uma pessoa cadastrada com o CPF: " + pessoaNova.getCpf());
+        }
         pessoas.put(pessoaNova.getCpf(), pessoaNova);
     }
 
@@ -32,6 +43,9 @@ public class GerenciamentoAdocao implements IGerenciamentoAdocao, Serializable {
     public void realizarAdocao(Pessoa pessoa, Animal animal, String data, int codigo) throws AnimalJaAdotadoException {
         if(animal.isAdotado()){
             throw new AnimalJaAdotadoException("O animal ja foi adotado");
+        }
+        if (adocoes.containsKey(codigo)) {
+            throw new AdocaoCodigoJaExisteException("Já existe uma adoção registrada com o código: " + codigo);
         }
         animal.adotar();
         Adocao novaAdocao = new Adocao(pessoa,animal,data,codigo);
@@ -43,10 +57,10 @@ public class GerenciamentoAdocao implements IGerenciamentoAdocao, Serializable {
     /**Método para consultar animais cadastrados*/
 
     @Override
-    public Animal consultarAnimal(int codigoAnimal) throws AnimalNaoEcontradoException{
+    public Animal consultarAnimal(int codigoAnimal) throws AnimalNaoEncontradoException{
         Animal animal= animais.get(codigoAnimal);
         if(animal==null){
-            throw new AnimalNaoEcontradoException("Animal não encontrado");
+            throw new AnimalNaoEncontradoException("Animal não encontrado");
         }
         return animal;
     }
@@ -65,55 +79,62 @@ public class GerenciamentoAdocao implements IGerenciamentoAdocao, Serializable {
     /**Método para consultar adoções realizadas*/
     @Override
     public Adocao consultarAdocao(int codigoAdocao) {
-        return adocoes.get(codigoAdocao);
+        Adocao adocao = adocoes.get(codigoAdocao);
+        if (adocao == null) {
+            throw new AdocaoNaoEncontradaException("Adoção não encontrada com o código: " + codigoAdocao);
+        }
+        return adocao;
     }
 
-    /**Método listar animais disponíveis*/
+    /**
+     * Método listar animais disponíveis.
+     * Usa Streams (filter + map + collect) para filtrar apenas os animais
+     * ainda não adotados e montar o texto de saída.
+     */
     @Override
     public String listarAnimaisDisponiveis() {
         if(animais.isEmpty()){
             return "Nenhum animal encontrado";
         }
-        StringBuilder sb = new StringBuilder();
-        for(Animal a : animais.values()){
-            if(!a.isAdotado()){
-                sb.append(a.toString()).append("\n");
-            }
-        }
-        return sb.toString();
+        String resultado = animais.values().stream()
+                .filter(animal -> !animal.isAdotado())
+                .map(Animal::toString)
+                .collect(Collectors.joining("\n"));
+
+        return resultado.isEmpty() ? "Nenhum animal disponível para adoção" : resultado;
     }
 
-    /**Método listar pessoas cadrastradas*/
+    /**
+     * Método listar pessoas cadastradas.
+     * Usa Streams (map + collect) para extrair apenas o nome de cada pessoa.
+     */
     @Override
     public String listarPessoasCadastradas() {
         if(pessoas.isEmpty()){
             return "Nenhuma pessoa cadastrada";
         }
-        StringBuilder sb= new StringBuilder();
-        for(Pessoa p : pessoas.values()){
-            sb.append(p.getNome()+"\n");
-        }
-        return sb.toString();
+        return pessoas.values().stream()
+                .map(Pessoa::getNome)
+                .collect(Collectors.joining("\n"));
     }
 
 
 
-    /**Método listar adoções realizadas*/
+    /**
+     * Método listar adoções realizadas.
+     * Usa Streams (map + collect) para montar a linha de texto de cada adoção.
+     */
     @Override
     public String listarAdocoes() {
         if(adocoes.isEmpty()){
             return "Nenhuma Adoção realizada";
         }
-        StringBuilder sb= new StringBuilder();
-        for(Adocao a : adocoes.values()){
-            sb.append("Código: ").append(a.getCodAdocao())
-                    .append(" | Adotante: ").append(a.getAdotante().getNome())
-                    .append(" | br.com.Adocao.Animal: ").append(a.getAnimalAdotado().getNome())
-                    .append(" | Data: ").append(a.getDataDeAdocao())
-                    .append("\n");
-
-        }
-        return sb.toString();
+        return adocoes.values().stream()
+                .map(a -> "Código: " + a.getCodAdocao()
+                        + " | Adotante: " + a.getAdotante().getNome()
+                        + " | Animal: " + a.getAnimalAdotado().getNome()
+                        + " | Data: " + a.getDataDeAdocao())
+                .collect(Collectors.joining("\n"));
     }
 
 
@@ -137,6 +158,27 @@ public class GerenciamentoAdocao implements IGerenciamentoAdocao, Serializable {
         adocoes.remove(codigoAdocao);
     }
 
+    /**
+     * Salva o estado atual do sistema em arquivo, delegando a gravação
+     * propriamente dita para o GravadorDeDados.
+     */
+    @Override
+    public void salvarDados() throws IOException {
+        GravadorDeDados gravador = new GravadorDeDados();
+        gravador.gravar(this);
+    }
 
+    /**
+     * Recupera o estado do sistema a partir do arquivo salvo, substituindo
+     * os dados atualmente carregados em memória pelos dados recuperados.
+     */
+    @Override
+    public void recuperarDados() throws IOException, ClassNotFoundException {
+        GravadorDeDados gravador = new GravadorDeDados();
+        GerenciamentoAdocao sistemaRecuperado = gravador.recuperar();
+        this.animais = sistemaRecuperado.animais;
+        this.pessoas = sistemaRecuperado.pessoas;
+        this.adocoes = sistemaRecuperado.adocoes;
+    }
 
 }

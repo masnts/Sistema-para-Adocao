@@ -54,7 +54,7 @@ public class Adocao implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(codAdocao);
+        return Objects.hash(codAdocao);
     }
 
     public String toString(){

@@ -46,7 +46,8 @@ public class Pessoa implements Serializable {
 
     @Override
     public String toString(){
-        return "br.com.Adocao.Pessoa: "+this.nome+ ", do cpf: "+this.cpf+
+        return "Pessoa: "+this.nome+
+                "\nCPF: "+this.cpf+
                 "\nEndereço: "+this.endereco+
                 "\nTelefone: "+this.telefone;
     }

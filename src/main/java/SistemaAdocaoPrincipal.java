@@ -2,6 +2,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import exceptions.*;
 
 public class SistemaAdocaoPrincipal extends JFrame {
 
@@ -37,10 +38,62 @@ public class SistemaAdocaoPrincipal extends JFrame {
         getContentPane().setBackground(COR_FUNDO);
         setLayout(new BorderLayout());
 
+        setJMenuBar(criarBarraDeMenu());
         add(criarCabecalho(), BorderLayout.NORTH);
         add(criarPainelInicial(), BorderLayout.CENTER);
 
         setVisible(true);
+    }
+
+    // ============================================================
+    // BARRA DE MENU
+    // ============================================================
+
+    /**
+     * Monta a barra de menu do sistema, com um menu para cada área
+     * (Animais, Pessoas, Adoções, Dados), reaproveitando as mesmas
+     * ações usadas pelos botões dos cards.
+     */
+    private JMenuBar criarBarraDeMenu() {
+
+        JMenuBar barraDeMenu = new JMenuBar();
+
+        JMenu menuAnimais = new JMenu("Animais");
+        menuAnimais.add(criarItemDeMenu("Cadastrar animal", e -> acaoCadastrarAnimal()));
+        menuAnimais.add(criarItemDeMenu("Pesquisar animal", e -> acaoPesquisarAnimal()));
+        menuAnimais.add(criarItemDeMenu("Listar animais disponíveis", e -> acaoListarAnimais()));
+        menuAnimais.add(criarItemDeMenu("Remover animal", e -> acaoApagarAnimal()));
+
+        JMenu menuPessoas = new JMenu("Pessoas");
+        menuPessoas.add(criarItemDeMenu("Cadastrar pessoa", e -> acaoCadastrarPessoa()));
+        menuPessoas.add(criarItemDeMenu("Pesquisar pessoa", e -> acaoPesquisarPessoa()));
+        menuPessoas.add(criarItemDeMenu("Listar pessoas", e -> acaoListarPessoas()));
+        menuPessoas.add(criarItemDeMenu("Remover pessoa", e -> acaoApagarPessoa()));
+
+        JMenu menuAdocoes = new JMenu("Adoções");
+        menuAdocoes.add(criarItemDeMenu("Realizar adoção", e -> acaoRealizarAdocao()));
+        menuAdocoes.add(criarItemDeMenu("Pesquisar adoção", e -> acaoPesquisarAdocao()));
+        menuAdocoes.add(criarItemDeMenu("Listar adoções", e -> acaoListarAdocoes()));
+        menuAdocoes.add(criarItemDeMenu("Remover adoção", e -> acaoApagarAdocao()));
+
+        JMenu menuDados = new JMenu("Dados");
+        menuDados.add(criarItemDeMenu("Salvar dados", e -> acaoSalvarDados()));
+        menuDados.add(criarItemDeMenu("Carregar dados", e -> acaoCarregarDados()));
+        menuDados.addSeparator();
+        menuDados.add(criarItemDeMenu("Sair", e -> acaoSair()));
+
+        barraDeMenu.add(menuAnimais);
+        barraDeMenu.add(menuPessoas);
+        barraDeMenu.add(menuAdocoes);
+        barraDeMenu.add(menuDados);
+
+        return barraDeMenu;
+    }
+
+    private JMenuItem criarItemDeMenu(String rotulo, ActionListener acao) {
+        JMenuItem item = new JMenuItem(rotulo);
+        item.addActionListener(acao);
+        return item;
     }
 
     // ============================================================
@@ -71,13 +124,7 @@ public class SistemaAdocaoPrincipal extends JFrame {
         textos.add(subtitulo);
 
         BotaoArredondado botaoSair = new BotaoArredondado("Sair", new Color(255, 255, 255, 40), Color.WHITE, new Color(255, 255, 255, 70));
-        botaoSair.addActionListener(e -> {
-            int resposta = JOptionPane.showConfirmDialog(
-                    this, "Deseja realmente sair?", "Sair", JOptionPane.YES_NO_OPTION);
-            if (resposta == JOptionPane.YES_OPTION) {
-                System.exit(0);
-            }
-        });
+        botaoSair.addActionListener(e -> acaoSair());
 
         JPanel painelSair = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         painelSair.setOpaque(false);
@@ -225,8 +272,16 @@ public class SistemaAdocaoPrincipal extends JFrame {
     }
 
     // ============================================================
-    // AÇÕES (mesma lógica de antes)
+    // AÇÕES (usadas tanto pelos botões dos cards quanto pelo menu)
     // ============================================================
+
+    private void acaoSair() {
+        int resposta = JOptionPane.showConfirmDialog(
+                this, "Deseja realmente sair?", "Sair", JOptionPane.YES_NO_OPTION);
+        if (resposta == JOptionPane.YES_OPTION) {
+            System.exit(0);
+        }
+    }
 
     private void acaoCadastrarAnimal() {
         try {
@@ -256,22 +311,33 @@ public class SistemaAdocaoPrincipal extends JFrame {
 
             JOptionPane.showMessageDialog(this, "Animal cadastrado!");
 
+        } catch (AnimalCodigoJaExisteException erro) {
+            JOptionPane.showMessageDialog(this, erro.getMessage());
+
+        } catch (NumberFormatException erro) {
+            JOptionPane.showMessageDialog(this, "Código inválido!");
+
         } catch (Exception erro) {
             JOptionPane.showMessageDialog(this, "Erro ao cadastrar animal");
         }
     }
 
     private void acaoCadastrarPessoa() {
-        String cpf = JOptionPane.showInputDialog(this, "CPF:");
-        String nome = JOptionPane.showInputDialog(this, "Nome:");
-        String endereco = JOptionPane.showInputDialog(this, "Endereço:");
-        String telefone = JOptionPane.showInputDialog(this, "Telefone:");
+        try {
+            String cpf = JOptionPane.showInputDialog(this, "CPF:");
+            String nome = JOptionPane.showInputDialog(this, "Nome:");
+            String endereco = JOptionPane.showInputDialog(this, "Endereço:");
+            String telefone = JOptionPane.showInputDialog(this, "Telefone:");
 
-        Pessoa pessoa = new Pessoa(cpf, nome, endereco, telefone);
+            Pessoa pessoa = new Pessoa(cpf, nome, endereco, telefone);
 
-        controller.cadastrarPessoa(pessoa);
+            controller.cadastrarPessoa(pessoa);
 
-        JOptionPane.showMessageDialog(this, "Pessoa cadastrada!");
+            JOptionPane.showMessageDialog(this, "Pessoa cadastrada!");
+
+        } catch (PessoaJaCadastradaException erro) {
+            JOptionPane.showMessageDialog(this, erro.getMessage());
+        }
     }
 
     private void acaoPesquisarAnimal() {
@@ -280,13 +346,12 @@ public class SistemaAdocaoPrincipal extends JFrame {
 
             Animal animal = controller.pesquisarAnimal(codigo);
 
-            if (animal != null) {
-                JOptionPane.showMessageDialog(this, animal.toString());
-            } else {
-                JOptionPane.showMessageDialog(this, "Animal não encontrado");
-            }
+            JOptionPane.showMessageDialog(this, animal.toString());
 
-        } catch (Exception erro) {
+        } catch (AnimalNaoEncontradoException erro) {
+            JOptionPane.showMessageDialog(this, erro.getMessage());
+
+        } catch (NumberFormatException erro) {
             JOptionPane.showMessageDialog(this, "Código inválido");
         }
     }
@@ -310,11 +375,10 @@ public class SistemaAdocaoPrincipal extends JFrame {
 
             Adocao resultadoAdocao = controller.pesquisarAdocao(codigo);
 
-            if (resultadoAdocao != null) {
-                JOptionPane.showMessageDialog(this, resultadoAdocao.toString());
-            } else {
-                JOptionPane.showMessageDialog(this, "Adoção não encontrada!");
-            }
+            JOptionPane.showMessageDialog(this, resultadoAdocao.toString());
+
+        } catch (AdocaoNaoEncontradaException erro) {
+            JOptionPane.showMessageDialog(this, erro.getMessage());
 
         } catch (NumberFormatException erro) {
             JOptionPane.showMessageDialog(this, "Digite somente números!");
@@ -367,11 +431,6 @@ public class SistemaAdocaoPrincipal extends JFrame {
 
             Animal animal = controller.pesquisarAnimal(codigoAnimal);
 
-            if (animal == null) {
-                JOptionPane.showMessageDialog(this, "Animal não encontrado!");
-                return;
-            }
-
             String cpf = JOptionPane.showInputDialog(this, "CPF do adotante:");
             Pessoa pessoa = controller.pesquisarPessoa(cpf);
 
@@ -383,6 +442,12 @@ public class SistemaAdocaoPrincipal extends JFrame {
             JOptionPane.showMessageDialog(this, "Adoção realizada com sucesso!");
 
         } catch (AnimalJaAdotadoException erro) {
+            JOptionPane.showMessageDialog(this, erro.getMessage());
+
+        } catch (AdocaoCodigoJaExisteException erro) {
+            JOptionPane.showMessageDialog(this, erro.getMessage());
+
+        } catch (AnimalNaoEncontradoException erro) {
             JOptionPane.showMessageDialog(this, erro.getMessage());
 
         } catch (PessoaNaoExisteException erro) {
@@ -398,7 +463,6 @@ public class SistemaAdocaoPrincipal extends JFrame {
 
     private void acaoSalvarDados() {
         controller.salvarDados();
-        JOptionPane.showMessageDialog(this, "Dados salvos com sucesso!");
     }
 
     private void acaoCarregarDados() {
