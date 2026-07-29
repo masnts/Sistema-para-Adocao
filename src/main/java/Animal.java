@@ -101,8 +101,8 @@ public class Animal implements Serializable {
                 "\nRaça: "+this.raca+
                 "\nSexo: "+this.sexo+
                 "\nData de nascimento: "+this.nascimento+
-                "\nCastrado: "+this.castrado+
-                "\nAdotado: "+this.adotado+"\n";
+                "\nCastrado: "+(this.castrado ? "Sim" : "Não")+
+                "\nAdotado: "+(this.adotado ? "Sim" : "Não")+"\n";
     }
 
     @Override

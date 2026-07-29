@@ -60,8 +60,7 @@ public class Adocao implements Serializable {
     public String toString(){
         return"Adoção: "+
                 "\nAnimal adotado: "+this.animalAdotado.getNome()+
-                "\nPessoa que adotou: "+this.adotante.getNome()+", do cpf: "+this.adotante.getCpf()+
+                "\nPessoa que adotou: "+this.adotante.getNome()+" |  CPF: "+this.adotante.getCpf()+
                 "\nData de adoção: "+this.dataDeAdocao;
-
     }
 }

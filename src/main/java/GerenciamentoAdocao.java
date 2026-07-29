@@ -97,7 +97,6 @@ public class GerenciamentoAdocao implements IGerenciamentoAdocao, Serializable {
             return "Nenhum animal encontrado";
         }
         String resultado = animais.values().stream()
-                .filter(animal -> !animal.isAdotado())
                 .map(Animal::toString)
                 .collect(Collectors.joining("\n"));
 
@@ -114,7 +113,7 @@ public class GerenciamentoAdocao implements IGerenciamentoAdocao, Serializable {
             return "Nenhuma pessoa cadastrada";
         }
         return pessoas.values().stream()
-                .map(Pessoa::getNome)
+                .map(Pessoa::toString)
                 .collect(Collectors.joining("\n"));
     }
 
@@ -131,9 +130,9 @@ public class GerenciamentoAdocao implements IGerenciamentoAdocao, Serializable {
         }
         return adocoes.values().stream()
                 .map(a -> "Código: " + a.getCodAdocao()
-                        + " | Adotante: " + a.getAdotante().getNome()
-                        + " | Animal: " + a.getAnimalAdotado().getNome()
-                        + " | Data: " + a.getDataDeAdocao())
+                        + "\n Adotante: " + a.getAdotante().getNome()
+                        + "\n Animal: " + a.getAnimalAdotado().getNome()
+                        + "\n Data: " + a.getDataDeAdocao())
                 .collect(Collectors.joining("\n"));
     }
 
