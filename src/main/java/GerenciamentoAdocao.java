@@ -97,6 +97,7 @@ public class GerenciamentoAdocao implements IGerenciamentoAdocao, Serializable {
             return "Nenhum animal encontrado";
         }
         String resultado = animais.values().stream()
+                .filter(animal -> !animal.isAdotado())
                 .map(Animal::toString)
                 .collect(Collectors.joining("\n"));
 
